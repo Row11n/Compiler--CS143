@@ -1,31 +1,9 @@
-Terminals unused in grammar
+终端机在文法中未使用
 
-   ELSE
-   FI
-   IF
-   IN
-   LET
-   LOOP
-   POOL
-   THEN
-   WHILE
-   CASE
-   ESAC
-   OF
-   DARROW
-   NEW
-   ISVOID
-   STR_CONST
-   INT_CONST
-   BOOL_CONST
-   OBJECTID
-   ASSIGN
-   NOT
-   LE
-   ERROR
+    ERROR
 
 
-Grammar
+语法
 
     0 $accept: program $end
 
@@ -34,198 +12,2478 @@ Grammar
     2 class_list: class
     3           | class_list class
 
-    4 class: CLASS TYPEID '{' dummy_feature_list '}' ';'
-    5      | CLASS TYPEID INHERITS TYPEID '{' dummy_feature_list '}' ';'
+    4 class: CLASS TYPEID '{' feature_list '}' ';'
+    5      | CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';'
+    6      | error ';' class
 
-    6 dummy_feature_list: /* empty */
+    7 feature_list: %empty
+    8             | feature_list feature
+    9             | feature_list error ';'
+
+   10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' ';'
+   11        | OBJECTID '(' ')' ':' TYPEID '{' exp '}' ';'
+   12        | OBJECTID ':' TYPEID no_exp ';'
+   13        | OBJECTID ':' TYPEID ASSIGN exp ';'
+
+   14 formal_list: formal
+   15            | formal_list ',' formal
+
+   16 formal: OBJECTID ':' TYPEID
+
+   17 branch_list: branch
+   18            | branch_list branch
+
+   19 branch: OBJECTID ':' TYPEID DARROW exp ';'
+
+   20 exp_list: exp ';'
+   21         | exp_list exp ';'
+   22         | exp_list error ';'
+
+   23 formal_exp_list: exp
+   24                | formal_exp_list ',' exp
+
+   25 no_exp: %empty
+
+   26 let: OBJECTID ':' TYPEID no_exp IN exp
+   27    | OBJECTID ':' TYPEID ASSIGN exp IN exp
+   28    | OBJECTID ':' TYPEID no_exp ',' let
+   29    | OBJECTID ':' TYPEID ASSIGN exp ',' let
+   30    | error ',' let
+   31    | error IN exp
+
+   32 exp: OBJECTID ASSIGN exp
+   33    | exp '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp '.' OBJECTID '(' ')'
+   35    | exp '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp '@' TYPEID '.' OBJECTID '(' ')'
+   37    | OBJECTID '(' formal_exp_list ')'
+   38    | OBJECTID '(' ')'
+   39    | IF exp THEN exp ELSE exp FI
+   40    | WHILE exp LOOP exp POOL
+   41    | '{' exp_list '}'
+   42    | LET let
+   43    | CASE exp OF branch_list ESAC
+   44    | NEW TYPEID
+   45    | ISVOID exp
+   46    | exp '+' exp
+   47    | exp '-' exp
+   48    | exp '*' exp
+   49    | exp '/' exp
+   50    | '~' exp
+   51    | exp '<' exp
+   52    | exp '=' exp
+   53    | exp LE exp
+   54    | NOT exp
+   55    | '(' exp ')'
+   56    | OBJECTID
+   57    | INT_CONST
+   58    | STR_CONST
+   59    | BOOL_CONST
 
 
-Terminals, with rules where they appear
+终结语词，附有它们出现处的规则
 
-$end (0) 0
-';' (59) 4 5
-'{' (123) 4 5
-'}' (125) 4 5
-error (256)
-CLASS (258) 4 5
-ELSE (259)
-FI (260)
-IF (261)
-IN (262)
-INHERITS (263) 5
-LET (264)
-LOOP (265)
-POOL (266)
-THEN (267)
-WHILE (268)
-CASE (269)
-ESAC (270)
-OF (271)
-DARROW (272)
-NEW (273)
-ISVOID (274)
-STR_CONST (275)
-INT_CONST (276)
-BOOL_CONST (277)
-TYPEID (278) 4 5
-OBJECTID (279)
-ASSIGN (280)
-NOT (281)
-LE (282)
-ERROR (283)
+    $end (0) 0
+    '(' (40) 10 11 33 34 35 36 37 38 55
+    ')' (41) 10 11 33 34 35 36 37 38 55
+    '*' (42) 48
+    '+' (43) 46
+    ',' (44) 15 24 28 29 30
+    '-' (45) 47
+    '.' (46) 33 34 35 36
+    '/' (47) 49
+    ':' (58) 10 11 12 13 16 19 26 27 28 29
+    ';' (59) 4 5 6 9 10 11 12 13 19 20 21 22
+    '<' (60) 51
+    '=' (61) 52
+    '@' (64) 35 36
+    '{' (123) 4 5 10 11 41
+    '}' (125) 4 5 10 11 41
+    '~' (126) 50
+    error (256) 6 9 22 30 31
+    CLASS (258) 4 5
+    ELSE (259) 39
+    FI (260) 39
+    IF (261) 39
+    IN (262) 26 27 31
+    INHERITS (263) 5
+    LET (264) 42
+    LOOP (265) 40
+    POOL (266) 40
+    THEN (267) 39
+    WHILE (268) 40
+    CASE (269) 43
+    ESAC (270) 43
+    OF (271) 43
+    DARROW (272) 19
+    NEW (273) 44
+    ISVOID (274) 45
+    STR_CONST <symbol> (275) 58
+    INT_CONST <symbol> (276) 57
+    BOOL_CONST <boolean> (277) 59
+    TYPEID <symbol> (278) 4 5 10 11 12 13 16 19 26 27 28 29 35 36 44
+    OBJECTID <symbol> (279) 10 11 12 13 16 19 26 27 28 29 32 33 34 35 36 37 38 56
+    ASSIGN (280) 13 27 29 32
+    NOT (281) 54
+    LE (282) 53
+    ERROR (283)
+    LET_ (285)
 
 
-Nonterminals, with rules where they appear
+非终结语词，附有它们出现处的规则
 
-$accept (32)
-    on left: 0
-program (33)
-    on left: 1, on right: 0
-class_list (34)
-    on left: 2 3, on right: 1 3
-class (35)
-    on left: 4 5, on right: 2 3
-dummy_feature_list (36)
-    on left: 6, on right: 4 5
+    $accept (46)
+        on left: 0
+    program <program> (47)
+        on left: 1
+        on right: 0
+    class_list <classes> (48)
+        on left: 2 3
+        on right: 1 3
+    class <class_> (49)
+        on left: 4 5 6
+        on right: 2 3 6
+    feature_list <features> (50)
+        on left: 7 8 9
+        on right: 4 5 8 9
+    feature <feature> (51)
+        on left: 10 11 12 13
+        on right: 8
+    formal_list <formals> (52)
+        on left: 14 15
+        on right: 10 15
+    formal <formal> (53)
+        on left: 16
+        on right: 14 15
+    branch_list <cases> (54)
+        on left: 17 18
+        on right: 18 43
+    branch <case_> (55)
+        on left: 19
+        on right: 17 18
+    exp_list <expressions> (56)
+        on left: 20 21 22
+        on right: 21 22 41
+    formal_exp_list <expressions> (57)
+        on left: 23 24
+        on right: 24 33 35 37
+    no_exp <expression> (58)
+        on left: 25
+        on right: 12 26 28
+    let <expression> (59)
+        on left: 26 27 28 29 30 31
+        on right: 28 29 30 42
+    exp <expression> (60)
+        on left: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59
+        on right: 10 11 13 19 20 21 23 24 26 27 29 31 32 33 34 35 36 39 40 43 45 46 47 48 49 50 51 52 53 54 55
 
 
-state 0
+状态 0
 
     0 $accept: . program $end
 
-    CLASS  shift, and go to state 1
+    error  偏移，并进入状态 1
+    CLASS  偏移，并进入状态 2
 
-    program     go to state 2
-    class_list  go to state 3
-    class       go to state 4
-
-
-state 1
-
-    4 class: CLASS . TYPEID '{' dummy_feature_list '}' ';'
-    5      | CLASS . TYPEID INHERITS TYPEID '{' dummy_feature_list '}' ';'
-
-    TYPEID  shift, and go to state 5
+    program     转到状态 3
+    class_list  转到状态 4
+    class       转到状态 5
 
 
-state 2
+状态 1
+
+    6 class: error . ';' class
+
+    ';'  偏移，并进入状态 6
+
+
+状态 2
+
+    4 class: CLASS . TYPEID '{' feature_list '}' ';'
+    5      | CLASS . TYPEID INHERITS TYPEID '{' feature_list '}' ';'
+
+    TYPEID  偏移，并进入状态 7
+
+
+状态 3
 
     0 $accept: program . $end
 
-    $end  shift, and go to state 6
+    $end  偏移，并进入状态 8
 
 
-state 3
+状态 4
 
     1 program: class_list .
     3 class_list: class_list . class
 
-    CLASS  shift, and go to state 1
+    error  偏移，并进入状态 1
+    CLASS  偏移，并进入状态 2
 
-    $default  reduce using rule 1 (program)
+    $end  使用规则 1 以归约 (program)
 
-    class  go to state 7
+    class  转到状态 9
 
 
-state 4
+状态 5
 
     2 class_list: class .
 
-    $default  reduce using rule 2 (class_list)
+    $default  使用规则 2 以归约 (class_list)
 
 
-state 5
+状态 6
 
-    4 class: CLASS TYPEID . '{' dummy_feature_list '}' ';'
-    5      | CLASS TYPEID . INHERITS TYPEID '{' dummy_feature_list '}' ';'
+    6 class: error ';' . class
 
-    INHERITS  shift, and go to state 8
-    '{'       shift, and go to state 9
+    error  偏移，并进入状态 1
+    CLASS  偏移，并进入状态 2
+
+    class  转到状态 10
 
 
-state 6
+状态 7
+
+    4 class: CLASS TYPEID . '{' feature_list '}' ';'
+    5      | CLASS TYPEID . INHERITS TYPEID '{' feature_list '}' ';'
+
+    INHERITS  偏移，并进入状态 11
+    '{'       偏移，并进入状态 12
+
+
+状态 8
 
     0 $accept: program $end .
 
-    $default  accept
+    $default  接受
 
 
-state 7
+状态 9
 
     3 class_list: class_list class .
 
-    $default  reduce using rule 3 (class_list)
+    $default  使用规则 3 以归约 (class_list)
 
 
-state 8
+状态 10
 
-    5 class: CLASS TYPEID INHERITS . TYPEID '{' dummy_feature_list '}' ';'
+    6 class: error ';' class .
 
-    TYPEID  shift, and go to state 10
-
-
-state 9
-
-    4 class: CLASS TYPEID '{' . dummy_feature_list '}' ';'
-
-    $default  reduce using rule 6 (dummy_feature_list)
-
-    dummy_feature_list  go to state 11
+    $default  使用规则 6 以归约 (class)
 
 
-state 10
+状态 11
 
-    5 class: CLASS TYPEID INHERITS TYPEID . '{' dummy_feature_list '}' ';'
+    5 class: CLASS TYPEID INHERITS . TYPEID '{' feature_list '}' ';'
 
-    '{'  shift, and go to state 12
-
-
-state 11
-
-    4 class: CLASS TYPEID '{' dummy_feature_list . '}' ';'
-
-    '}'  shift, and go to state 13
+    TYPEID  偏移，并进入状态 13
 
 
-state 12
+状态 12
 
-    5 class: CLASS TYPEID INHERITS TYPEID '{' . dummy_feature_list '}' ';'
+    4 class: CLASS TYPEID '{' . feature_list '}' ';'
 
-    $default  reduce using rule 6 (dummy_feature_list)
+    $default  使用规则 7 以归约 (feature_list)
 
-    dummy_feature_list  go to state 14
-
-
-state 13
-
-    4 class: CLASS TYPEID '{' dummy_feature_list '}' . ';'
-
-    ';'  shift, and go to state 15
+    feature_list  转到状态 14
 
 
-state 14
+状态 13
 
-    5 class: CLASS TYPEID INHERITS TYPEID '{' dummy_feature_list . '}' ';'
+    5 class: CLASS TYPEID INHERITS TYPEID . '{' feature_list '}' ';'
 
-    '}'  shift, and go to state 16
-
-
-state 15
-
-    4 class: CLASS TYPEID '{' dummy_feature_list '}' ';' .
-
-    $default  reduce using rule 4 (class)
+    '{'  偏移，并进入状态 15
 
 
-state 16
+状态 14
 
-    5 class: CLASS TYPEID INHERITS TYPEID '{' dummy_feature_list '}' . ';'
+    4 class: CLASS TYPEID '{' feature_list . '}' ';'
+    8 feature_list: feature_list . feature
+    9             | feature_list . error ';'
 
-    ';'  shift, and go to state 17
+    error     偏移，并进入状态 16
+    OBJECTID  偏移，并进入状态 17
+    '}'       偏移，并进入状态 18
+
+    feature  转到状态 19
 
 
-state 17
+状态 15
 
-    5 class: CLASS TYPEID INHERITS TYPEID '{' dummy_feature_list '}' ';' .
+    5 class: CLASS TYPEID INHERITS TYPEID '{' . feature_list '}' ';'
 
-    $default  reduce using rule 5 (class)
+    $default  使用规则 7 以归约 (feature_list)
+
+    feature_list  转到状态 20
+
+
+状态 16
+
+    9 feature_list: feature_list error . ';'
+
+    ';'  偏移，并进入状态 21
+
+
+状态 17
+
+   10 feature: OBJECTID . '(' formal_list ')' ':' TYPEID '{' exp '}' ';'
+   11        | OBJECTID . '(' ')' ':' TYPEID '{' exp '}' ';'
+   12        | OBJECTID . ':' TYPEID no_exp ';'
+   13        | OBJECTID . ':' TYPEID ASSIGN exp ';'
+
+    '('  偏移，并进入状态 22
+    ':'  偏移，并进入状态 23
+
+
+状态 18
+
+    4 class: CLASS TYPEID '{' feature_list '}' . ';'
+
+    ';'  偏移，并进入状态 24
+
+
+状态 19
+
+    8 feature_list: feature_list feature .
+
+    $default  使用规则 8 以归约 (feature_list)
+
+
+状态 20
+
+    5 class: CLASS TYPEID INHERITS TYPEID '{' feature_list . '}' ';'
+    8 feature_list: feature_list . feature
+    9             | feature_list . error ';'
+
+    error     偏移，并进入状态 16
+    OBJECTID  偏移，并进入状态 17
+    '}'       偏移，并进入状态 25
+
+    feature  转到状态 19
+
+
+状态 21
+
+    9 feature_list: feature_list error ';' .
+
+    $default  使用规则 9 以归约 (feature_list)
+
+
+状态 22
+
+   10 feature: OBJECTID '(' . formal_list ')' ':' TYPEID '{' exp '}' ';'
+   11        | OBJECTID '(' . ')' ':' TYPEID '{' exp '}' ';'
+
+    OBJECTID  偏移，并进入状态 26
+    ')'       偏移，并进入状态 27
+
+    formal_list  转到状态 28
+    formal       转到状态 29
+
+
+状态 23
+
+   12 feature: OBJECTID ':' . TYPEID no_exp ';'
+   13        | OBJECTID ':' . TYPEID ASSIGN exp ';'
+
+    TYPEID  偏移，并进入状态 30
+
+
+状态 24
+
+    4 class: CLASS TYPEID '{' feature_list '}' ';' .
+
+    $default  使用规则 4 以归约 (class)
+
+
+状态 25
+
+    5 class: CLASS TYPEID INHERITS TYPEID '{' feature_list '}' . ';'
+
+    ';'  偏移，并进入状态 31
+
+
+状态 26
+
+   16 formal: OBJECTID . ':' TYPEID
+
+    ':'  偏移，并进入状态 32
+
+
+状态 27
+
+   11 feature: OBJECTID '(' ')' . ':' TYPEID '{' exp '}' ';'
+
+    ':'  偏移，并进入状态 33
+
+
+状态 28
+
+   10 feature: OBJECTID '(' formal_list . ')' ':' TYPEID '{' exp '}' ';'
+   15 formal_list: formal_list . ',' formal
+
+    ')'  偏移，并进入状态 34
+    ','  偏移，并进入状态 35
+
+
+状态 29
+
+   14 formal_list: formal .
+
+    $default  使用规则 14 以归约 (formal_list)
+
+
+状态 30
+
+   12 feature: OBJECTID ':' TYPEID . no_exp ';'
+   13        | OBJECTID ':' TYPEID . ASSIGN exp ';'
+
+    ASSIGN  偏移，并进入状态 36
+
+    $default  使用规则 25 以归约 (no_exp)
+
+    no_exp  转到状态 37
+
+
+状态 31
+
+    5 class: CLASS TYPEID INHERITS TYPEID '{' feature_list '}' ';' .
+
+    $default  使用规则 5 以归约 (class)
+
+
+状态 32
+
+   16 formal: OBJECTID ':' . TYPEID
+
+    TYPEID  偏移，并进入状态 38
+
+
+状态 33
+
+   11 feature: OBJECTID '(' ')' ':' . TYPEID '{' exp '}' ';'
+
+    TYPEID  偏移，并进入状态 39
+
+
+状态 34
+
+   10 feature: OBJECTID '(' formal_list ')' . ':' TYPEID '{' exp '}' ';'
+
+    ':'  偏移，并进入状态 40
+
+
+状态 35
+
+   15 formal_list: formal_list ',' . formal
+
+    OBJECTID  偏移，并进入状态 26
+
+    formal  转到状态 41
+
+
+状态 36
+
+   13 feature: OBJECTID ':' TYPEID ASSIGN . exp ';'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 56
+
+
+状态 37
+
+   12 feature: OBJECTID ':' TYPEID no_exp . ';'
+
+    ';'  偏移，并进入状态 57
+
+
+状态 38
+
+   16 formal: OBJECTID ':' TYPEID .
+
+    $default  使用规则 16 以归约 (formal)
+
+
+状态 39
+
+   11 feature: OBJECTID '(' ')' ':' TYPEID . '{' exp '}' ';'
+
+    '{'  偏移，并进入状态 58
+
+
+状态 40
+
+   10 feature: OBJECTID '(' formal_list ')' ':' . TYPEID '{' exp '}' ';'
+
+    TYPEID  偏移，并进入状态 59
+
+
+状态 41
+
+   15 formal_list: formal_list ',' formal .
+
+    $default  使用规则 15 以归约 (formal_list)
+
+
+状态 42
+
+   39 exp: IF . exp THEN exp ELSE exp FI
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 60
+
+
+状态 43
+
+   42 exp: LET . let
+
+    error     偏移，并进入状态 61
+    OBJECTID  偏移，并进入状态 62
+
+    let  转到状态 63
+
+
+状态 44
+
+   40 exp: WHILE . exp LOOP exp POOL
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 64
+
+
+状态 45
+
+   43 exp: CASE . exp OF branch_list ESAC
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 65
+
+
+状态 46
+
+   44 exp: NEW . TYPEID
+
+    TYPEID  偏移，并进入状态 66
+
+
+状态 47
+
+   45 exp: ISVOID . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 67
+
+
+状态 48
+
+   58 exp: STR_CONST .
+
+    $default  使用规则 58 以归约 (exp)
+
+
+状态 49
+
+   57 exp: INT_CONST .
+
+    $default  使用规则 57 以归约 (exp)
+
+
+状态 50
+
+   59 exp: BOOL_CONST .
+
+    $default  使用规则 59 以归约 (exp)
+
+
+状态 51
+
+   32 exp: OBJECTID . ASSIGN exp
+   37    | OBJECTID . '(' formal_exp_list ')'
+   38    | OBJECTID . '(' ')'
+   56    | OBJECTID .
+
+    ASSIGN  偏移，并进入状态 68
+    '('     偏移，并进入状态 69
+
+    $default  使用规则 56 以归约 (exp)
+
+
+状态 52
+
+   54 exp: NOT . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 70
+
+
+状态 53
+
+   50 exp: '~' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 71
+
+
+状态 54
+
+   41 exp: '{' . exp_list '}'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp_list  转到状态 72
+    exp       转到状态 73
+
+
+状态 55
+
+   55 exp: '(' . exp ')'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 74
+
+
+状态 56
+
+   13 feature: OBJECTID ':' TYPEID ASSIGN exp . ';'
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    ';'  偏移，并进入状态 84
+
+
+状态 57
+
+   12 feature: OBJECTID ':' TYPEID no_exp ';' .
+
+    $default  使用规则 12 以归约 (feature)
+
+
+状态 58
+
+   11 feature: OBJECTID '(' ')' ':' TYPEID '{' . exp '}' ';'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 85
+
+
+状态 59
+
+   10 feature: OBJECTID '(' formal_list ')' ':' TYPEID . '{' exp '}' ';'
+
+    '{'  偏移，并进入状态 86
+
+
+状态 60
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   39    | IF exp . THEN exp ELSE exp FI
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    THEN  偏移，并进入状态 87
+    LE    偏移，并进入状态 75
+    '<'   偏移，并进入状态 76
+    '='   偏移，并进入状态 77
+    '+'   偏移，并进入状态 78
+    '-'   偏移，并进入状态 79
+    '*'   偏移，并进入状态 80
+    '/'   偏移，并进入状态 81
+    '@'   偏移，并进入状态 82
+    '.'   偏移，并进入状态 83
+
+
+状态 61
+
+   30 let: error . ',' let
+   31    | error . IN exp
+
+    IN   偏移，并进入状态 88
+    ','  偏移，并进入状态 89
+
+
+状态 62
+
+   26 let: OBJECTID . ':' TYPEID no_exp IN exp
+   27    | OBJECTID . ':' TYPEID ASSIGN exp IN exp
+   28    | OBJECTID . ':' TYPEID no_exp ',' let
+   29    | OBJECTID . ':' TYPEID ASSIGN exp ',' let
+
+    ':'  偏移，并进入状态 90
+
+
+状态 63
+
+   42 exp: LET let .
+
+    $default  使用规则 42 以归约 (exp)
+
+
+状态 64
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   40    | WHILE exp . LOOP exp POOL
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LOOP  偏移，并进入状态 91
+    LE    偏移，并进入状态 75
+    '<'   偏移，并进入状态 76
+    '='   偏移，并进入状态 77
+    '+'   偏移，并进入状态 78
+    '-'   偏移，并进入状态 79
+    '*'   偏移，并进入状态 80
+    '/'   偏移，并进入状态 81
+    '@'   偏移，并进入状态 82
+    '.'   偏移，并进入状态 83
+
+
+状态 65
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   43    | CASE exp . OF branch_list ESAC
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    OF   偏移，并进入状态 92
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+
+状态 66
+
+   44 exp: NEW TYPEID .
+
+    $default  使用规则 44 以归约 (exp)
+
+
+状态 67
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   45    | ISVOID exp .
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 45 以归约 (exp)
+
+
+状态 68
+
+   32 exp: OBJECTID ASSIGN . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 93
+
+
+状态 69
+
+   37 exp: OBJECTID '(' . formal_exp_list ')'
+   38    | OBJECTID '(' . ')'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+    ')'         偏移，并进入状态 94
+
+    formal_exp_list  转到状态 95
+    exp              转到状态 96
+
+
+状态 70
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+   54    | NOT exp .
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 54 以归约 (exp)
+
+
+状态 71
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   50    | '~' exp .
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 50 以归约 (exp)
+
+
+状态 72
+
+   21 exp_list: exp_list . exp ';'
+   22         | exp_list . error ';'
+   41 exp: '{' exp_list . '}'
+
+    error       偏移，并进入状态 97
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '}'         偏移，并进入状态 98
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 99
+
+
+状态 73
+
+   20 exp_list: exp . ';'
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    ';'  偏移，并进入状态 100
+
+
+状态 74
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+   55    | '(' exp . ')'
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    ')'  偏移，并进入状态 101
+
+
+状态 75
+
+   53 exp: exp LE . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 102
+
+
+状态 76
+
+   51 exp: exp '<' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 103
+
+
+状态 77
+
+   52 exp: exp '=' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 104
+
+
+状态 78
+
+   46 exp: exp '+' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 105
+
+
+状态 79
+
+   47 exp: exp '-' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 106
+
+
+状态 80
+
+   48 exp: exp '*' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 107
+
+
+状态 81
+
+   49 exp: exp '/' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 108
+
+
+状态 82
+
+   35 exp: exp '@' . TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp '@' . TYPEID '.' OBJECTID '(' ')'
+
+    TYPEID  偏移，并进入状态 109
+
+
+状态 83
+
+   33 exp: exp '.' . OBJECTID '(' formal_exp_list ')'
+   34    | exp '.' . OBJECTID '(' ')'
+
+    OBJECTID  偏移，并进入状态 110
+
+
+状态 84
+
+   13 feature: OBJECTID ':' TYPEID ASSIGN exp ';' .
+
+    $default  使用规则 13 以归约 (feature)
+
+
+状态 85
+
+   11 feature: OBJECTID '(' ')' ':' TYPEID '{' exp . '}' ';'
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    '}'  偏移，并进入状态 111
+
+
+状态 86
+
+   10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' . exp '}' ';'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 112
+
+
+状态 87
+
+   39 exp: IF exp THEN . exp ELSE exp FI
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 113
+
+
+状态 88
+
+   31 let: error IN . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 114
+
+
+状态 89
+
+   30 let: error ',' . let
+
+    error     偏移，并进入状态 61
+    OBJECTID  偏移，并进入状态 62
+
+    let  转到状态 115
+
+
+状态 90
+
+   26 let: OBJECTID ':' . TYPEID no_exp IN exp
+   27    | OBJECTID ':' . TYPEID ASSIGN exp IN exp
+   28    | OBJECTID ':' . TYPEID no_exp ',' let
+   29    | OBJECTID ':' . TYPEID ASSIGN exp ',' let
+
+    TYPEID  偏移，并进入状态 116
+
+
+状态 91
+
+   40 exp: WHILE exp LOOP . exp POOL
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 117
+
+
+状态 92
+
+   43 exp: CASE exp OF . branch_list ESAC
+
+    OBJECTID  偏移，并进入状态 118
+
+    branch_list  转到状态 119
+    branch       转到状态 120
+
+
+状态 93
+
+   32 exp: OBJECTID ASSIGN exp .
+   33    | exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 32 以归约 (exp)
+
+
+状态 94
+
+   38 exp: OBJECTID '(' ')' .
+
+    $default  使用规则 38 以归约 (exp)
+
+
+状态 95
+
+   24 formal_exp_list: formal_exp_list . ',' exp
+   37 exp: OBJECTID '(' formal_exp_list . ')'
+
+    ')'  偏移，并进入状态 121
+    ','  偏移，并进入状态 122
+
+
+状态 96
+
+   23 formal_exp_list: exp .
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 23 以归约 (formal_exp_list)
+
+
+状态 97
+
+   22 exp_list: exp_list error . ';'
+
+    ';'  偏移，并进入状态 123
+
+
+状态 98
+
+   41 exp: '{' exp_list '}' .
+
+    $default  使用规则 41 以归约 (exp)
+
+
+状态 99
+
+   21 exp_list: exp_list exp . ';'
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    ';'  偏移，并进入状态 124
+
+
+状态 100
+
+   20 exp_list: exp ';' .
+
+    $default  使用规则 20 以归约 (exp_list)
+
+
+状态 101
+
+   55 exp: '(' exp ')' .
+
+    $default  使用规则 55 以归约 (exp)
+
+
+状态 102
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+   53    | exp LE exp .
+
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    LE   错误 (非相联的)
+    '<'  错误 (非相联的)
+    '='  错误 (非相联的)
+
+    $default  使用规则 53 以归约 (exp)
+
+
+状态 103
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   51    | exp '<' exp .
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    LE   错误 (非相联的)
+    '<'  错误 (非相联的)
+    '='  错误 (非相联的)
+
+    $default  使用规则 51 以归约 (exp)
+
+
+状态 104
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   52    | exp '=' exp .
+   53    | exp . LE exp
+
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    LE   错误 (非相联的)
+    '<'  错误 (非相联的)
+    '='  错误 (非相联的)
+
+    $default  使用规则 52 以归约 (exp)
+
+
+状态 105
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   46    | exp '+' exp .
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 46 以归约 (exp)
+
+
+状态 106
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   47    | exp '-' exp .
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 47 以归约 (exp)
+
+
+状态 107
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   48    | exp '*' exp .
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 48 以归约 (exp)
+
+
+状态 108
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   49    | exp '/' exp .
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 49 以归约 (exp)
+
+
+状态 109
+
+   35 exp: exp '@' TYPEID . '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp '@' TYPEID . '.' OBJECTID '(' ')'
+
+    '.'  偏移，并进入状态 125
+
+
+状态 110
+
+   33 exp: exp '.' OBJECTID . '(' formal_exp_list ')'
+   34    | exp '.' OBJECTID . '(' ')'
+
+    '('  偏移，并进入状态 126
+
+
+状态 111
+
+   11 feature: OBJECTID '(' ')' ':' TYPEID '{' exp '}' . ';'
+
+    ';'  偏移，并进入状态 127
+
+
+状态 112
+
+   10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' exp . '}' ';'
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    '}'  偏移，并进入状态 128
+
+
+状态 113
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   39    | IF exp THEN exp . ELSE exp FI
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    ELSE  偏移，并进入状态 129
+    LE    偏移，并进入状态 75
+    '<'   偏移，并进入状态 76
+    '='   偏移，并进入状态 77
+    '+'   偏移，并进入状态 78
+    '-'   偏移，并进入状态 79
+    '*'   偏移，并进入状态 80
+    '/'   偏移，并进入状态 81
+    '@'   偏移，并进入状态 82
+    '.'   偏移，并进入状态 83
+
+
+状态 114
+
+   31 let: error IN exp .
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 31 以归约 (let)
+
+
+状态 115
+
+   30 let: error ',' let .
+
+    $default  使用规则 30 以归约 (let)
+
+
+状态 116
+
+   26 let: OBJECTID ':' TYPEID . no_exp IN exp
+   27    | OBJECTID ':' TYPEID . ASSIGN exp IN exp
+   28    | OBJECTID ':' TYPEID . no_exp ',' let
+   29    | OBJECTID ':' TYPEID . ASSIGN exp ',' let
+
+    ASSIGN  偏移，并进入状态 130
+
+    $default  使用规则 25 以归约 (no_exp)
+
+    no_exp  转到状态 131
+
+
+状态 117
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   40    | WHILE exp LOOP exp . POOL
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    POOL  偏移，并进入状态 132
+    LE    偏移，并进入状态 75
+    '<'   偏移，并进入状态 76
+    '='   偏移，并进入状态 77
+    '+'   偏移，并进入状态 78
+    '-'   偏移，并进入状态 79
+    '*'   偏移，并进入状态 80
+    '/'   偏移，并进入状态 81
+    '@'   偏移，并进入状态 82
+    '.'   偏移，并进入状态 83
+
+
+状态 118
+
+   19 branch: OBJECTID . ':' TYPEID DARROW exp ';'
+
+    ':'  偏移，并进入状态 133
+
+
+状态 119
+
+   18 branch_list: branch_list . branch
+   43 exp: CASE exp OF branch_list . ESAC
+
+    ESAC      偏移，并进入状态 134
+    OBJECTID  偏移，并进入状态 118
+
+    branch  转到状态 135
+
+
+状态 120
+
+   17 branch_list: branch .
+
+    $default  使用规则 17 以归约 (branch_list)
+
+
+状态 121
+
+   37 exp: OBJECTID '(' formal_exp_list ')' .
+
+    $default  使用规则 37 以归约 (exp)
+
+
+状态 122
+
+   24 formal_exp_list: formal_exp_list ',' . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 136
+
+
+状态 123
+
+   22 exp_list: exp_list error ';' .
+
+    $default  使用规则 22 以归约 (exp_list)
+
+
+状态 124
+
+   21 exp_list: exp_list exp ';' .
+
+    $default  使用规则 21 以归约 (exp_list)
+
+
+状态 125
+
+   35 exp: exp '@' TYPEID '.' . OBJECTID '(' formal_exp_list ')'
+   36    | exp '@' TYPEID '.' . OBJECTID '(' ')'
+
+    OBJECTID  偏移，并进入状态 137
+
+
+状态 126
+
+   33 exp: exp '.' OBJECTID '(' . formal_exp_list ')'
+   34    | exp '.' OBJECTID '(' . ')'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+    ')'         偏移，并进入状态 138
+
+    formal_exp_list  转到状态 139
+    exp              转到状态 96
+
+
+状态 127
+
+   11 feature: OBJECTID '(' ')' ':' TYPEID '{' exp '}' ';' .
+
+    $default  使用规则 11 以归约 (feature)
+
+
+状态 128
+
+   10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' . ';'
+
+    ';'  偏移，并进入状态 140
+
+
+状态 129
+
+   39 exp: IF exp THEN exp ELSE . exp FI
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 141
+
+
+状态 130
+
+   27 let: OBJECTID ':' TYPEID ASSIGN . exp IN exp
+   29    | OBJECTID ':' TYPEID ASSIGN . exp ',' let
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 142
+
+
+状态 131
+
+   26 let: OBJECTID ':' TYPEID no_exp . IN exp
+   28    | OBJECTID ':' TYPEID no_exp . ',' let
+
+    IN   偏移，并进入状态 143
+    ','  偏移，并进入状态 144
+
+
+状态 132
+
+   40 exp: WHILE exp LOOP exp POOL .
+
+    $default  使用规则 40 以归约 (exp)
+
+
+状态 133
+
+   19 branch: OBJECTID ':' . TYPEID DARROW exp ';'
+
+    TYPEID  偏移，并进入状态 145
+
+
+状态 134
+
+   43 exp: CASE exp OF branch_list ESAC .
+
+    $default  使用规则 43 以归约 (exp)
+
+
+状态 135
+
+   18 branch_list: branch_list branch .
+
+    $default  使用规则 18 以归约 (branch_list)
+
+
+状态 136
+
+   24 formal_exp_list: formal_exp_list ',' exp .
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 24 以归约 (formal_exp_list)
+
+
+状态 137
+
+   35 exp: exp '@' TYPEID '.' OBJECTID . '(' formal_exp_list ')'
+   36    | exp '@' TYPEID '.' OBJECTID . '(' ')'
+
+    '('  偏移，并进入状态 146
+
+
+状态 138
+
+   34 exp: exp '.' OBJECTID '(' ')' .
+
+    $default  使用规则 34 以归约 (exp)
+
+
+状态 139
+
+   24 formal_exp_list: formal_exp_list . ',' exp
+   33 exp: exp '.' OBJECTID '(' formal_exp_list . ')'
+
+    ')'  偏移，并进入状态 147
+    ','  偏移，并进入状态 122
+
+
+状态 140
+
+   10 feature: OBJECTID '(' formal_list ')' ':' TYPEID '{' exp '}' ';' .
+
+    $default  使用规则 10 以归约 (feature)
+
+
+状态 141
+
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   39    | IF exp THEN exp ELSE exp . FI
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    FI   偏移，并进入状态 148
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+
+状态 142
+
+   27 let: OBJECTID ':' TYPEID ASSIGN exp . IN exp
+   29    | OBJECTID ':' TYPEID ASSIGN exp . ',' let
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    IN   偏移，并进入状态 149
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    ','  偏移，并进入状态 150
+
+
+状态 143
+
+   26 let: OBJECTID ':' TYPEID no_exp IN . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 151
+
+
+状态 144
+
+   28 let: OBJECTID ':' TYPEID no_exp ',' . let
+
+    error     偏移，并进入状态 61
+    OBJECTID  偏移，并进入状态 62
+
+    let  转到状态 152
+
+
+状态 145
+
+   19 branch: OBJECTID ':' TYPEID . DARROW exp ';'
+
+    DARROW  偏移，并进入状态 153
+
+
+状态 146
+
+   35 exp: exp '@' TYPEID '.' OBJECTID '(' . formal_exp_list ')'
+   36    | exp '@' TYPEID '.' OBJECTID '(' . ')'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+    ')'         偏移，并进入状态 154
+
+    formal_exp_list  转到状态 155
+    exp              转到状态 96
+
+
+状态 147
+
+   33 exp: exp '.' OBJECTID '(' formal_exp_list ')' .
+
+    $default  使用规则 33 以归约 (exp)
+
+
+状态 148
+
+   39 exp: IF exp THEN exp ELSE exp FI .
+
+    $default  使用规则 39 以归约 (exp)
+
+
+状态 149
+
+   27 let: OBJECTID ':' TYPEID ASSIGN exp IN . exp
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 156
+
+
+状态 150
+
+   29 let: OBJECTID ':' TYPEID ASSIGN exp ',' . let
+
+    error     偏移，并进入状态 61
+    OBJECTID  偏移，并进入状态 62
+
+    let  转到状态 157
+
+
+状态 151
+
+   26 let: OBJECTID ':' TYPEID no_exp IN exp .
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 26 以归约 (let)
+
+
+状态 152
+
+   28 let: OBJECTID ':' TYPEID no_exp ',' let .
+
+    $default  使用规则 28 以归约 (let)
+
+
+状态 153
+
+   19 branch: OBJECTID ':' TYPEID DARROW . exp ';'
+
+    IF          偏移，并进入状态 42
+    LET         偏移，并进入状态 43
+    WHILE       偏移，并进入状态 44
+    CASE        偏移，并进入状态 45
+    NEW         偏移，并进入状态 46
+    ISVOID      偏移，并进入状态 47
+    STR_CONST   偏移，并进入状态 48
+    INT_CONST   偏移，并进入状态 49
+    BOOL_CONST  偏移，并进入状态 50
+    OBJECTID    偏移，并进入状态 51
+    NOT         偏移，并进入状态 52
+    '~'         偏移，并进入状态 53
+    '{'         偏移，并进入状态 54
+    '('         偏移，并进入状态 55
+
+    exp  转到状态 158
+
+
+状态 154
+
+   36 exp: exp '@' TYPEID '.' OBJECTID '(' ')' .
+
+    $default  使用规则 36 以归约 (exp)
+
+
+状态 155
+
+   24 formal_exp_list: formal_exp_list . ',' exp
+   35 exp: exp '@' TYPEID '.' OBJECTID '(' formal_exp_list . ')'
+
+    ')'  偏移，并进入状态 159
+    ','  偏移，并进入状态 122
+
+
+状态 156
+
+   27 let: OBJECTID ':' TYPEID ASSIGN exp IN exp .
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+
+    $default  使用规则 27 以归约 (let)
+
+
+状态 157
+
+   29 let: OBJECTID ':' TYPEID ASSIGN exp ',' let .
+
+    $default  使用规则 29 以归约 (let)
+
+
+状态 158
+
+   19 branch: OBJECTID ':' TYPEID DARROW exp . ';'
+   33 exp: exp . '.' OBJECTID '(' formal_exp_list ')'
+   34    | exp . '.' OBJECTID '(' ')'
+   35    | exp . '@' TYPEID '.' OBJECTID '(' formal_exp_list ')'
+   36    | exp . '@' TYPEID '.' OBJECTID '(' ')'
+   46    | exp . '+' exp
+   47    | exp . '-' exp
+   48    | exp . '*' exp
+   49    | exp . '/' exp
+   51    | exp . '<' exp
+   52    | exp . '=' exp
+   53    | exp . LE exp
+
+    LE   偏移，并进入状态 75
+    '<'  偏移，并进入状态 76
+    '='  偏移，并进入状态 77
+    '+'  偏移，并进入状态 78
+    '-'  偏移，并进入状态 79
+    '*'  偏移，并进入状态 80
+    '/'  偏移，并进入状态 81
+    '@'  偏移，并进入状态 82
+    '.'  偏移，并进入状态 83
+    ';'  偏移，并进入状态 160
+
+
+状态 159
+
+   35 exp: exp '@' TYPEID '.' OBJECTID '(' formal_exp_list ')' .
+
+    $default  使用规则 35 以归约 (exp)
+
+
+状态 160
+
+   19 branch: OBJECTID ':' TYPEID DARROW exp ';' .
+
+    $default  使用规则 19 以归约 (branch)

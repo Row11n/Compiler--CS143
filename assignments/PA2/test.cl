@@ -75,6 +75,16 @@ class CellularAutomaton inherits IO {
     };
 };
 
+Class H inherits A {
+   c() : Int {
+      let num2 : Int <- 1, Error in (2+1)
+   };
+
+   d() : Int {
+      let Error, num2 : Int <- 1 in (2+1)
+   };
+};
+
 class Main {
     cells : CellularAutomaton;
    

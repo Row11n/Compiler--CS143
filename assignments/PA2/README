@@ -105,4 +105,289 @@ Instructions
 
 Write-up for PA2
 ----------------
+# 编译PA2-词法分析
+
+[TOC]
+
+## 任务1：实现词法分析器
+
+### 代码分析
+
+词法分析器主要由一下几个部分组成：
+
+- Inline Comment
+- Nested Comment
+- String Constant
+- Operator
+- Keyword
+- Others(such as DIGIT, OBJECT etc.)
+
+在实现上，只有前三个需要细节处理，其他的基本上都是直译逻辑。这里详细说明前三个部分。
+
+#### Inline Comment
+
+用到了`flex`中的`start condition`语法，声明了`%x INLINE_COMMENT NESTED_COMMENT STRING`三个`condition`。当检测到`--`时，进入`INLINE_COMMENT`环境，遇到`\n`时转行并退出环境，其余情况均eat up：
+
+```lua
+<INITIAL>"--"   BEGIN(INLINE_COMMENT);
+
+<INLINE_COMMENT>[^\n]* {}
+
+<INLINE_COMMENT>[\n]   {
+  curr_lineno ++;
+  BEGIN(0);
+}
+```
+
+#### Nested Comment
+
+相关代码段如下：
+
+```lua
+static int stack_comment = 0; //in the definition area
+
+<INITIAL>"*)"   {
+  cool_yylval.error_msg = "Unmatched *)";
+  return ERROR;
+}
+
+<INITIAL,NESTED_COMMENT>"(*"  {
+  stack_comment++;
+  BEGIN(NESTED_COMMENT);
+}
+
+<NESTED_COMMENT>"\n"    curr_lineno ++;
+
+<NESTED_COMMENT>"*)"  {
+  stack_comment--;
+  if (stack_comment == 0)
+      BEGIN(0);
+}
+
+<NESTED_COMMENT><<EOF>>  {
+  cool_yylval.error_msg = "EOF in comment";
+  BEGIN(0);
+  return ERROR;
+}
+
+<NESTED_COMMENT>. {}
+```
+
+定义一个栈状态变量记录注释的嵌套层数。在初始状态下，若遇见`*)`，则此时报错`"Unmatched *)"`；若遇见`(*`，则进入`NESTED_COMMENT`状态，并增加一层嵌套计数；若在`NESTED_COMMENT`状态下遇见`*)`，则减少一层嵌套计数，当嵌套计数为0时，可知此时注释部分结束，于是回到`INITIAL`状态；在`NESTED_COMMENT`状态下，若遇见`\n`，则此时需要维护行数变量`curr_lineno++`，若遇见`EOF`则需要报错并且回到初始状态，其余均eat up.
+
+#### String Constant
+
+这个部分的细节比较多，部分相关代码段如下：
+
+```lisp
+# include<string.h>		
+using namespace std;	//in the definition area
+
+<INITIAL>\"		{
+  BEGIN(STRING);
+  yymore();
+}
+
+<STRING><<EOF>>   {
+  cool_yylval.error_msg = "EOF in string constant";
+  BEGIN(0);
+  yyrestart(0);
+  return ERROR;
+}
+
+<STRING>[^\"\\\n]* yymore();
+
+<STRING>\\[^\n] yymore();
+
+<STRING>\\\n    {
+    curr_lineno ++;
+    yymore();
+}
+
+<STRING>\n    {
+  cool_yylval.error_msg = "Unterminated string constant";
+  curr_lineno++;
+  BEGIN(0);
+  return ERROR;
+}
+
+<STRING>\"    {
+  string raw_str(yytext, yyleng);
+  raw_str = raw_str.substr(1, raw_str.length() - 2);
+  string::size_type p;
+
+  if ((p = raw_str.find_first_of('\0')) != string::npos) 
+  {
+      int temp = 0;
+      while(raw_str[--p] == '\\')
+        temp++;
+      if(temp % 2)
+        cool_yylval.error_msg = "String contains escaped null character.";
+      else
+        cool_yylval.error_msg = "String contains null character.";
+      BEGIN(0);
+      return ERROR;
+  }
+
+  string str = "";
+  string::size_type q;
+  while ((q = raw_str.find_first_of("\\")) != std::string::npos) 
+  {
+      str += raw_str.substr(0, q);
+      switch(raw_str[q + 1]) 
+      {
+          case 'b':
+          str += "\b";
+          break;
+
+          case 't':
+          str += "\t";
+          break;
+
+          case 'n':
+          str += "\n";
+          break;
+
+          case 'f':
+          str += "\f";
+          break;
+
+          default:
+          str += raw_str[q + 1];
+          break;
+      }
+      raw_str = raw_str.substr(q + 2, raw_str.length() - 2);
+  }
+
+  str += raw_str;
+
+  if (str.length() >= MAX_STR_CONST) 
+  {
+      cool_yylval.error_msg = "String constant too long";
+      BEGIN(0);
+      return ERROR;
+  }
+
+  cool_yylval.symbol = stringtable.add_string((char *)str.c_str());
+  BEGIN(0);
+  return STR_CONST;
+}
+```
+
+在初始状态下遇见`"`时进入`STRING`状态，这个状态下处理字符串常量。在此状态下，若遇见`EOF`和换行符，则直接回到初始状态并报错，**注意若`EOF`在转义字符后需要特殊处理，因为报错不一样**；若遇见`"`和转义换行符之外的字符，则调用`flex`库函数`yymore()`，该函数会保留`yytext`的已有内容，继续读取下一个字符并将其附加在`yytext`后。**根据手册，转义换行符是合法的，需要特殊处理。**在`STRING`状态下再次遇见`"`后，处理`yytext`中的内容，为了方便处理`null	`，这里利用了C++的`string`类。利用`raw_string`取出存在`yytext`中的字符串，然后特殊处理含有`null、\b\t\n\f`和字符串过长的情况，最后正常返回。**这里同样需要注意转义字符后的`null`，因为报错不一样。**
+
+#### Others
+
+其余的逻辑都比较简单，这里不贴代码了。需要注意`true,false`的首字母必须小写，以及空白符`\t\r\f\v`等的处理逻辑不要漏写。
+
+### 注意事项
+
+实现的难点几乎集中于`string_const`中，有以下几点：
+
+- 转义字符的处理。
+  转义字符会影响一些报错信息，如直接`EOF`和转义字符后的`EOF`报错信息是不一样的，要特殊处理。同样需要特殊处理的还有`\b\t\n\f`，这四个字母不会吃掉前面的转义字符，但其他字符会吃掉前面的转义字符。
+
+- `string_const`的可换行性质。
+  在`cool-manual`中有一个case：
+
+  ```c
+  "This \
+  is OK"
+  "This is not
+  OK"
+  ```
+
+  这表明字符串常量可以通过转义字符后换行使其合法化。在实际编写时，发现
+
+  ```lisp
+  <STRING>\\\n    {
+    curr_lineno ++;
+    yymore();
+  }
+  ```
+
+  不能正常匹配到上述合法换行情况（包括官方的lexer）。debug后发现是因为在`CRLF`文件格式下，换行符为`\r\n`，而官方的lexer只处理了`LF`格式下的换行符`\n`，将文件格式转换为`LF`则lexer运行正常了。个人认为这是官方实现不全，应该考虑到`CRLF`文件格式。
+
+- `null`的处理
+  因为没有查阅到`flex`中如何表示`null`，本实验采用的方法是调用C++库，通过`string`类的`find_first_of()`成员函数去查询字符串中是否含有`null`。这里有一个实现细节是不能读到`null`就直接报错，因为有空字符串这个特例，所以需要读完整个`string`后去查询。
+  `null`符也有转义字符后报错信息不一样的问题，本实验的逻辑是找到`null`后去查询`null`前有多少个转义字符，因为`\\null`算作一个`\`和`null`而`\null`算作转义字符后跟了一个`null`，故而其前方有奇数个`\`时算作转义字符后跟了一个`null`，偶数个时算作普通的`null`。
+
+##  任务2：为词法分析器构造测试
+
+本实验构造了两个测试，主要测试文档中提到的一些`error`、注释有效性和字符串常量中的一些特殊情况。
+
+### test_stringAndComment
+
+````lisp
+-- Empty string constant
+""				
+
+-- Normal escape
+"ag\a\g\\a\\g"		
+
+-- Special escape
+"ntbf\n\t\b\f\\n\\t\\b\\f"	
+
+-- Null escape. Should be "1230"	
+"123\0"				
+
+-- Null escape. Should be "1230123"
+"123\0123"		    
+
+-- Null escape. Should be "123\0"
+"123\\0"			
+
+-- Null escape. Should be "123\0123"
+"123\\0123"		    
+
+-- Slash escape. Should be "123\0"
+"123\\\0"			
+
+-- Slash escape. Should be "123\\0"
+"123\\\\0"
+
+-- "\\n"
+"\\n"
+
+-- "\\\n"
+"\\\n"
+
+-- Error: String contains null character
+"helloworld"		
+
+-- Error: String contains escaped null character
+"hello\world"
+		
+-- Error: String too long
+...
+
+-- Test in manual
+"This \
+is OK"
+
+"This is not
+OK"
+
+-- Unmatched '*)'
+(*This is a comment*)*)
+
+-- EOF in string constant
+" abc
+````
+
+### test_errorHandling
+
+```lisp
+-- Error handling tests.
+if (2 > 1)
+a <- b ? c : d
+a <- !b
+a <- "hello world
+"
+
+-- EOF in comment
+(*This is a comment
+  and another line
+  with EOF behind
+```
 

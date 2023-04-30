@@ -17,4 +17,56 @@
 #48 ERROR "Unterminated string constant"
 #48 TYPEID OK
 #49 ERROR "Unterminated string constant"
-#51 ERROR "EOF in string constant"
+#51 ERROR "Unmatched *)"
+#53 CLASS
+#53 TYPEID H
+#53 INHERITS
+#53 TYPEID A
+#53 '{'
+#54 OBJECTID c
+#54 '('
+#54 ')'
+#54 ':'
+#54 TYPEID Int
+#54 '{'
+#55 LET
+#55 OBJECTID num2
+#55 ':'
+#55 TYPEID Int
+#55 ASSIGN
+#55 INT_CONST 1
+#55 ','
+#55 TYPEID Error
+#55 IN
+#55 '('
+#55 INT_CONST 2
+#55 '+'
+#55 INT_CONST 1
+#55 ')'
+#56 '}'
+#56 ';'
+#58 OBJECTID d
+#58 '('
+#58 ')'
+#58 ':'
+#58 TYPEID Int
+#58 '{'
+#59 LET
+#59 TYPEID Error
+#59 ','
+#59 OBJECTID num2
+#59 ':'
+#59 TYPEID Int
+#59 ASSIGN
+#59 INT_CONST 1
+#59 IN
+#59 '('
+#59 INT_CONST 2
+#59 '+'
+#59 INT_CONST 1
+#59 ')'
+#60 '}'
+#60 ';'
+#61 '}'
+#61 ';'
+#64 ERROR "EOF in string constant"
